@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Button, Link, TextField, Label, InputGroup, Input } from "@heroui/react";
+import {Description, Radio, RadioGroup} from "@heroui/react";
 import { Eye, EyeSlash, Person, At, ShieldKeyhole } from "@gravity-ui/icons";
 import { authClient } from "@/lib/auth-client";
+
 
 export default function SignupPage() {
     const router = useRouter();
@@ -12,6 +14,7 @@ export default function SignupPage() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [role, setRole] = useState("seeker");
 
     const [isVisible, setIsVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +51,8 @@ export default function SignupPage() {
                 email,
                 password,
                 name,
+                role,
+                callbackURL: "/",
             });
 
             if (response.error) {
@@ -130,6 +135,28 @@ export default function SignupPage() {
                             </button>
                         </InputGroup>
                     </TextField>
+
+                     <div className="flex flex-col gap-4">
+      <Label>Subscription plan</Label>
+      <RadioGroup defaultValue="seeker" name="role" onChange={(value) => setRole(value)} orientation="horizontal">
+        <Radio value="seeker">
+          <Radio.Control>
+            <Radio.Indicator />
+          </Radio.Control>
+          <Radio.Content>
+            <Label>Job Seeker</Label>
+          </Radio.Content>
+        </Radio>
+        <Radio value="recruiter">
+          <Radio.Control>
+            <Radio.Indicator />
+          </Radio.Control>
+          <Radio.Content>
+            <Label>Recruiter</Label>
+          </Radio.Content>
+        </Radio>
+      </RadioGroup>
+    </div>
 
                     {/* Dynamic Status Badges */}
                     {error && (
