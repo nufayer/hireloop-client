@@ -16,8 +16,9 @@ import {
     toast
 } from "@heroui/react";
 import { Briefcase, Globe } from "@gravity-ui/icons";
+import { Loader } from "lucide-react";
 import { createJob } from "@/lib/actions/jobs";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function PostJobPage() {
     // Mock configuration for recruiter's authenticated state
@@ -29,6 +30,9 @@ export default function PostJobPage() {
 
     const [isRemote, setIsRemote] = useState(false);
     const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
+    const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -67,12 +71,25 @@ export default function PostJobPage() {
             isPubliclyVisible: true,
         };
 
-        const res = await createJob(payload);
-        if (res.insertedId) {
-            toast.success("Job posted successfully!");
-            e.target.reset();
-            setIsRemote(false);
-            redirect("/dashboard/recruiter/jobs");
+        setIsSubmitting(true);
+        setSubmitError(null);
+        try {
+            const res = await createJob(payload);
+            if (res.insertedId) {
+                toast.success("Job posted successfully!");
+                e.target.reset();
+                setIsRemote(false);
+                router.push("/dashboard/recruiter/jobs");
+                return;
+            }
+            throw new Error("Unexpected response from server");
+        } catch (err) {
+            console.error("createJob error", err);
+            const msg = err?.message || "Failed to post job";
+            setSubmitError(msg);
+            toast.error(msg);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -264,20 +281,32 @@ export default function PostJobPage() {
                     </Fieldset>
 
                     {/* Form Actions */}
-                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800 w-full">
-                        <Button
-                            type="button"
-                            variant="bordered"
-                            className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 rounded-lg px-6 font-medium h-11"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            className="bg-white text-black font-semibold hover:bg-zinc-200 rounded-lg px-6 transition-colors h-11"
-                        >
-                            Post Job
-                        </Button>
+                    <div className="flex flex-col gap-2">
+                        {submitError && (
+                            <div className="text-sm text-danger bg-rose-900/20 border border-rose-900/40 rounded px-3 py-2">
+                                {submitError}
+                            </div>
+                        )}
+
+                        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800 w-full">
+                            <Button
+                                type="button"
+                                variant="bordered"
+                                className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 rounded-lg px-6 font-medium h-11"
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                className="bg-white text-black font-semibold hover:bg-zinc-200 rounded-lg px-6 transition-colors h-11 flex items-center"
+                                disabled={isSubmitting}
+                                aria-busy={isSubmitting}
+                            >
+                                {isSubmitting && <Loader className="animate-spin mr-2 w-4 h-4" />}
+                                {isSubmitting ? 'Posting...' : 'Post Job'}
+                            </Button>
+                        </div>
                     </div>
                 </Form>
             </div>

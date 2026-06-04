@@ -1,9 +1,14 @@
-export async function createJob(payload) {
-  // Client-side wrapper that posts to the internal API route.
-  const res = await fetch('/api/jobs', {
+'use server';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || '';
+export const createJob = async (newJobData) => {
+  const url = new URL('/api/jobs', API_BASE_URL).toString();
+  const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newJobData),
   });
 
   if (!res.ok) {
