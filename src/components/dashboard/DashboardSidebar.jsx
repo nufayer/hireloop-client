@@ -1,30 +1,42 @@
 
 "use client";
 
+import Link from "next/link";
 import { Bars, Bell, Envelope, Gear, House, Magnifier, Person } from "@gravity-ui/icons";
 import { Drawer } from "@heroui/react";
 
 export function DashboardSidebar() {
     const navItems = [
-        { icon: House, label: "Home" },
-        { icon: Magnifier, label: "Search" },
-        { icon: Bell, label: "Notifications" },
-        { icon: Envelope, label: "Messages" },
-        { icon: Person, label: "Profile" },
-        { icon: Gear, label: "Settings" },
+        { icon: House, label: "Home", href: "/dashboard" },
+        { icon: Magnifier, label: "Jobs", href: "/dashboard/recruiter/jobs" },
+        { icon: Bell, label: "Post a Job", href: "/dashboard/recruiter/jobs/new" },
+        { icon: Envelope, label: "Company Profile", href: "/dashboard/recruiter/company" },
+        { icon: Person, label: "Profile", href: "/dashboard/profile" },
+        { icon: Gear, label: "Settings", href: "/dashboard/settings" },
     ];
 
     const navContent = (
         <nav className="flex flex-col gap-1">
             {navItems.map((item) => (
-                <button
-                    key={item.label}
-                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-default"
-                    type="button"
-                >
-                    <item.icon className="size-5 text-muted" />
-                    {item.label}
-                </button>
+                item.href ? (
+                    <Link
+                        key={item.label}
+                        href={item.href}
+                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-default"
+                    >
+                        <item.icon className="size-5 text-muted" />
+                        {item.label}
+                    </Link>
+                ) : (
+                    <button
+                        key={item.label}
+                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-default"
+                        type="button"
+                    >
+                        <item.icon className="size-5 text-muted" />
+                        {item.label}
+                    </button>
+                )
             ))}
         </nav>
     );
@@ -38,7 +50,6 @@ export function DashboardSidebar() {
                 <Drawer>
                     <Drawer.Trigger className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm" variant="secondary">
                         <Bars />
-                        Sidebar
                     </Drawer.Trigger>
                     <Drawer.Backdrop>
                         <Drawer.Content placement="left">
