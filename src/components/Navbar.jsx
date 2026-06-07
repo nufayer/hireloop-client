@@ -57,7 +57,7 @@ function Navbar() {
         {/* Center - Navigation */}
         <ul className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           <li>
-            <Link href="#">Browse Jobs</Link>
+            <Link href="/jobs">Browse Jobs</Link>
           </li>
           <li>
             <Link href="#">Company</Link>
