@@ -4,6 +4,7 @@ import { getJobById } from '@/lib/api/jobs';
 import { getUserSession } from '@/lib/core/session';
 import { redirect } from 'next/navigation';
 import JobApply from './JobApply';
+import { getApplicationsByApplicant } from '@/lib/api/application';
 
 const ApplyPage = async ({ params }) => {
   const { id } = await params;
@@ -40,10 +41,22 @@ const ApplyPage = async ({ params }) => {
     );
   }
 
+  const applications = await getApplicationsByApplicant(user.id);
+  const plan = {
+    name: 'Free Plan',
+    maxApplicationsPerMonth: 5
+  }
+
   return (
     <main className="w-full min-h-screen bg-zinc-950 text-white p-6 md:p-12 lg:p-16">
       <div className="max-w-4xl mx-auto rounded-[32px] border border-zinc-800 bg-zinc-900/80 p-8 shadow-2xl">
         <div className="space-y-4">
+          <div>
+            <h2>You Have applied {applications.length} times out of {plan.maxApplicationsPerMonth} this month.</h2>
+            {applications.length < plan.maxApplicationsPerMonth && (
+              <p className="text-green-500">You can still apply for more jobs this month.</p>
+            )}
+          </div>
           <h1 className="text-4xl font-bold tracking-tight">Apply for {job.jobTitle}</h1>
           <p className="text-zinc-400 text-base">
             You&apos;re applying to <span className="font-semibold text-white">{job.companyName}</span>.
