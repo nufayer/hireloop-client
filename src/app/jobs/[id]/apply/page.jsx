@@ -59,7 +59,7 @@ const ApplyPage = async ({ params }) => {
             </div>
           </div>
           <div>
-            <JobApply job={job} user={user} />
+            <JobApply job={job} applicant={user} />
           </div>
         </div>
 
