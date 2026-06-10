@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getJobById } from '@/lib/api/jobs';
 import { getUserSession } from '@/lib/core/session';
 import { redirect } from 'next/navigation';
+import JobApply from './JobApply';
 
 const ApplyPage = async ({ params }) => {
   const { id } = await params;
@@ -12,6 +13,20 @@ const ApplyPage = async ({ params }) => {
   if(!user) {
     redirect(`/auth/signin?redirect=/jobs/${id}/apply`);
   }
+
+  if(user.role !== 'seeker') {
+    return (
+      <div className="w-full min-h-screen bg-zinc-950 flex flex-col justify-center items-center text-white p-6">
+        <h1 className="text-3xl font-semibold">Access Denied</h1>
+        <p className="text-zinc-400 mt-4">Only job seekers can apply for jobs. Please sign in with a seeker account to proceed.</p>
+        <Link href="/jobs" className="mt-6 inline-flex rounded-xl bg-purple-600 px-5 py-3 text-sm font-medium text-white hover:bg-purple-500">
+          Back to Job Listings
+        </Link>
+      </div>
+    );
+  }
+
+
 
   if (!job) {
     return (
@@ -43,9 +58,9 @@ const ApplyPage = async ({ params }) => {
               <p className="mt-2 text-white">{job.jobType}</p>
             </div>
           </div>
-          <p className="text-zinc-300">
-            This page is ready for your application form, resume upload, and submission flow. For now, click below to return to the job details.
-          </p>
+          <div>
+            <JobApply job={job} user={user} />
+          </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">

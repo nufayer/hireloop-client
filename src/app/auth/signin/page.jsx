@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, Input, Button, Link } from '@heroui/react';
 import { authClient } from '@/lib/auth-client';
 
 export default function SignInPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get('redirect') || '/';
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
