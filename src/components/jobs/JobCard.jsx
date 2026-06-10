@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Button, Link } from "@heroui/react";
+import Link from "next/link";
+import { Card } from "@heroui/react";
 import { MapPin, Briefcase, CircleDollar, ArrowRight } from "@gravity-ui/icons";
 
 export default function JobCard({ job }) {
@@ -17,8 +18,8 @@ export default function JobCard({ job }) {
     ? `$${formatSalary(job.minSalary)}–$${formatSalary(job.maxSalary)} / year`
     : "Salary Negociable";
 
-  // Safely extract the ID string depending on your MongoDB data hydration setup
-  const jobId = job._id?.$oid || job._id;
+  // Safely extract the job id string for routing
+  const jobId = job._id?.$oid ?? job._id?.toString?.() ?? job._id;
 
   return (
     <Card className="p-6 w-full max-w-[440px] border-none bg-zinc-900 text-zinc-100 rounded-[32px] shadow-2xl">
@@ -100,8 +101,6 @@ export default function JobCard({ job }) {
         <Link
           href={`/jobs/${jobId}`}
           className="group flex justify-start items-center gap-2 bg-transparent hover:bg-zinc-800/40 p-0 text-base font-medium text-white transition-all duration-200"
-          variant="light"
-          disableRipple
         >
           Apply Now
           <ArrowRight className="group-hover:translate-x-1 text-zinc-400 group-hover:text-white w-4 h-4 transition-transform duration-200" />

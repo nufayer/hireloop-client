@@ -72,53 +72,78 @@ const filterMockJobs = ({ companyId, status, id }) => {
   });
 };
 
-export const getJobs = async (status = 'active') => {
-  if (!baseUrl) {
-    console.warn('NEXT_PUBLIC_BASE_URL is not configured');
-    return filterMockJobs({ status });
+const buildUrl = (path) => {
+  // On the server, ensure we return an absolute URL using available env
+  // fallbacks so `new URL(...)` never receives a bare relative path.
+  if (typeof window === 'undefined') {
+    const serverBase = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    return new URL(path, serverBase).toString();
   }
 
+  return baseUrl ? new URL(path, baseUrl).toString() : path;
+};
+
+export const getJobs = async (status = 'active') => {
+  const url = buildUrl(`/api/jobs?status=${encodeURIComponent(status)}`);
+
   try {
-    const url = new URL(`/api/jobs?status=${encodeURIComponent(status)}`, baseUrl).toString();
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: 'no-store' });
     return handleResponse(res);
   } catch (error) {
     console.error('Error fetching jobs:', error);
+    if (!baseUrl) {
+      return filterMockJobs({ status });
+    }
     throw error;
   }
 };
 
 export const getJobById = async (id) => {
-  if (!baseUrl) {
-    console.warn('NEXT_PUBLIC_BASE_URL is not configured');
-    return filterMockJobs({ id })[0] || null;
-  }
+  if (!id) return null;
+  const url = buildUrl(`/api/jobs?id=${encodeURIComponent(id)}`);
 
   try {
-    const url = new URL(`/api/jobs?id=${encodeURIComponent(id)}`, baseUrl).toString();
-    const res = await fetch(url);
-    return handleResponse(res);
+    const res = await fetch(url, { cache: 'no-store' });
+    const data = await handleResponse(res);
+
+    // If the API returned null (not found), attempt a local fallback
+    if (!data) {
+      try {
+        const all = await getJobs('all');
+        if (Array.isArray(all)) {
+          return all.find((j) => {
+            const jid = j?._id?.$oid ?? j?._id?.toString?.() ?? j?._id;
+            return jid === id;
+          }) || null;
+        }
+      } catch (e) {
+        // ignore and return null below
+      }
+    }
+
+    return data;
   } catch (error) {
     console.error('Error fetching job by id:', error);
+    if (!baseUrl) {
+      return filterMockJobs({ id })[0] || null;
+    }
     throw error;
   }
 };
 
 export const getCompanyJobs = async (companyId, status = 'active') => {
-  if (!baseUrl) {
-    console.warn('NEXT_PUBLIC_BASE_URL is not configured');
-    return filterMockJobs({ companyId, status });
-  }
+  const url = buildUrl(
+    `/api/jobs?companyId=${encodeURIComponent(companyId)}&status=${encodeURIComponent(status)}`
+  );
 
   try {
-    const url = new URL(
-      `/api/jobs?companyId=${encodeURIComponent(companyId)}&status=${encodeURIComponent(status)}`,
-      baseUrl
-    ).toString();
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: 'no-store' });
     return handleResponse(res);
   } catch (error) {
     console.error('Error fetching company jobs:', error);
+    if (!baseUrl) {
+      return filterMockJobs({ companyId, status });
+    }
     throw error;
   }
 };

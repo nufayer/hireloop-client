@@ -36,7 +36,8 @@ export const authClient = authClientProxy;
 export const signOut = (...args) => authClient.signOut(...args);
 export const useSession = () => {
     if (typeof window === "undefined") {
-        throw new Error("useSession must be used in a client component.");
+        return { data: null, isPending: false };
     }
+
     return authClient.useSession();
 };

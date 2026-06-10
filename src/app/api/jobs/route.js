@@ -78,7 +78,7 @@ const formatJob = (job) => {
 export async function GET(req) {
   try {
     const { searchParams } = req.nextUrl;
-    const id = searchParams.get('id');
+    const id = searchParams.get('id') || searchParams.get('jobId');
     const companyId = searchParams.get('companyId');
     const status = searchParams.get('status');
 
@@ -101,7 +101,11 @@ export async function GET(req) {
     const query = {};
 
     if (id) {
-      query._id = ObjectId.isValid(id) ? new ObjectId(id) : id;
+      if (ObjectId.isValid(id)) {
+        query.$or = [{ _id: new ObjectId(id) }, { _id: id }];
+      } else {
+        query._id = id;
+      }
     }
     if (companyId) {
       query.companyId = companyId;
