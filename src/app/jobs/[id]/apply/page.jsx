@@ -54,7 +54,7 @@ const ApplyPage = async ({ params }) => {
           <div>
             <h2>You Have applied {applications.length} times out of {plan.maxApplicationsPerMonth} this month.</h2>
             {applications.length < plan.maxApplicationsPerMonth && (
-              <p className="text-green-500">You can still apply for more jobs this month.</p>
+              <p className="text-green-500">Purchase a premium plan to apply for more jobs. <Link href="/plans" className="text-purple-500 hover:underline">View Plans</Link></p>
             )}
           </div>
           <h1 className="text-4xl font-bold tracking-tight">Apply for {job.jobTitle}</h1>

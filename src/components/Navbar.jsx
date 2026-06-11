@@ -60,7 +60,10 @@ function Navbar() {
             <Link href="/jobs">Browse Jobs</Link>
           </li>
           <li>
-            <Link href="#">Company</Link>
+            <Link href="/company">Company</Link>
+          </li>
+          <li>
+            <Link href="/plans">Plans</Link>
           </li>
         </ul>
 
