@@ -5,6 +5,7 @@ import { getUserSession } from '@/lib/core/session';
 import { redirect } from 'next/navigation';
 import JobApply from './JobApply';
 import { getApplicationsByApplicant } from '@/lib/api/application';
+import { getPlanById } from '@/lib/api/plans';
 
 const ApplyPage = async ({ params }) => {
   const { id } = await params;
@@ -28,7 +29,6 @@ const ApplyPage = async ({ params }) => {
   }
 
 
-
   if (!job) {
     return (
       <div className="w-full min-h-screen bg-zinc-950 flex flex-col justify-center items-center text-white p-6">
@@ -42,10 +42,9 @@ const ApplyPage = async ({ params }) => {
   }
 
   const applications = await getApplicationsByApplicant(user.id);
-  const plan = {
-    name: 'Free Plan',
-    maxApplicationsPerMonth: 5
-  }
+
+  const plan = await getPlanById(user?.plan || 'seeker_free');
+
 
   return (
     <main className="w-full min-h-screen bg-zinc-950 text-white p-6 md:p-12 lg:p-16">

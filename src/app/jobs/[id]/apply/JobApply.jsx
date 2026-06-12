@@ -27,7 +27,7 @@ const JobApply = ({ job, applicant }) => {
         // Combine the pre-existing job/applicant data with the new form data
         const submissionData = {
             jobId: job?._id,
-            jobTitle: job?.jobTitle,
+            jobTitle: job?.jobTitle || job?.title,
             companyName: job?.companyName,
             applicantId: applicant?.id,
             applicantName: applicant?.name,
@@ -38,9 +38,17 @@ const JobApply = ({ job, applicant }) => {
         console.log('Submitting Application:', submissionData);
         // Handle your API submission here
         const res = await submitApplication(submissionData);
-        if (res.insertedId) {
+        
+        if (res.error) {
+            alert(`Error: ${res.error}`);
+            return;
+        }
+
+        if (res.insertedId || res.success) {
             alert('Application submitted successfully!');
             setFormData({ resumeLink: '', portfolioLink: '', additionalNotes: '' });
+        } else {
+            alert('Something went wrong. Please try again.');
         }
     };
 

@@ -83,7 +83,7 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-default-500">
 
-          <p>
+          <p suppressHydrationWarning>
             © {new Date().getFullYear()} JobBoard. All rights reserved.
           </p>
 
