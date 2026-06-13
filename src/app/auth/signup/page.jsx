@@ -57,6 +57,7 @@ export default function SignupPage() {
                 password,
                 name,
                 role,
+                plan,
                 callbackURL: "/",
             });
 
@@ -142,22 +143,22 @@ export default function SignupPage() {
                     </TextField>
 
                      <div className="flex flex-col gap-4">
-      <Label>Subscription plan</Label>
-      <RadioGroup defaultValue="seeker" name="role" onChange={(value) => setRole(value)} orientation="horizontal">
-        <Radio value="seeker">
+      <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Subscription plan</Label>
+      <RadioGroup value={role} onChange={setRole} name="role" orientation="horizontal" className="flex gap-4">
+        <Radio value="seeker" className="flex items-center gap-2 cursor-pointer">
           <Radio.Control>
             <Radio.Indicator />
           </Radio.Control>
           <Radio.Content>
-            <Label>Job Seeker</Label>
+            <Label className="text-sm cursor-pointer">Job Seeker</Label>
           </Radio.Content>
         </Radio>
-        <Radio value="recruiter">
+        <Radio value="recruiter" className="flex items-center gap-2 cursor-pointer">
           <Radio.Control>
             <Radio.Indicator />
           </Radio.Control>
           <Radio.Content>
-            <Label>Recruiter</Label>
+            <Label className="text-sm cursor-pointer">Recruiter</Label>
           </Radio.Content>
         </Radio>
       </RadioGroup>

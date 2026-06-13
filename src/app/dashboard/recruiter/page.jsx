@@ -19,7 +19,6 @@ const RecruiterDashboardHomePage = () => {
     ];
 
     const user = session?.user;
-    console.log("Session data in RecruiterDashboardHomePage:", session);
 
     return (
         <div>
