@@ -4,7 +4,7 @@ import { getJobById } from '@/lib/api/jobs';
 import { getUserSession } from '@/lib/core/session';
 import { redirect } from 'next/navigation';
 import JobApply from './JobApply';
-import { getApplicationsByApplicant } from '@/lib/api/application';
+import { getApplicationsByApplicant } from '@/lib/api/applications';
 import { getPlanById } from '@/lib/api/plans';
 
 const ApplyPage = async ({ params }) => {

@@ -21,11 +21,11 @@ export const serverFetch = async (path) => {
 }
 
 
-export const serverMutation = async (path, data) => {
+export const serverMutation = async (path, data, method = 'POST') => {
     const baseUrl = getBaseUrl();
     try {
         const res = await fetch(`${baseUrl}${path}`, {
-            method: 'POST',
+            method: 'method',
             headers: {
                 'Content-Type': 'application/json',
             },

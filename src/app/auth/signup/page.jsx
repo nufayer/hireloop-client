@@ -6,9 +6,10 @@ import { Card, Button, Link, TextField, Label, InputGroup, Input } from "@heroui
 import {Description, Radio, RadioGroup} from "@heroui/react";
 import { Eye, EyeSlash, Person, At, ShieldKeyhole } from "@gravity-ui/icons";
 import { authClient } from "@/lib/auth-client";
+import { Suspense } from "react";
 
 
-export default function SignupPage() {
+function SignupForm() {
     const router = useRouter();
 
     const [name, setName] = useState("");
@@ -199,5 +200,13 @@ export default function SignupPage() {
                 </form>
             </Card>
         </div>
+    );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SignupForm />
+        </Suspense>
     );
 }

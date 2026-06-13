@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const getMongoUri = () => process.env.MONGO_DB_URI;
 const getDbName = () => process.env.MONGO_DB_NAME || process.env.AUTH_DB_NAME || 'hireloop';
@@ -11,6 +11,19 @@ async function getClient() {
   const client = new MongoClient(uri);
   await client.connect();
   return client;
+}
+
+async function findAllCompanies() {
+  const client = await getClient();
+  if (!client) return [];
+
+  try {
+    const db = client.db(getDbName());
+    const companies = await db.collection('companies').find({}).toArray();
+    return companies;
+  } finally {
+    await client.close();
+  }
 }
 
 async function findCompanyByRecruiterId(recruiterId) {
@@ -39,6 +52,29 @@ async function insertCompanyToDb(company) {
   }
 }
 
+async function updateCompanyById(id, updatedFields) {
+  const client = await getClient();
+  if (!client) return null;
+
+  try {
+    const db = client.db(getDbName());
+    if (!ObjectId.isValid(id)) {
+      throw new Error('Invalid ID format');
+    }
+    const result = await db.collection('companies').updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { ...updatedFields, updatedAt: new Date() } }
+    );
+    return {
+      acknowledged: result.acknowledged,
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    };
+  } finally {
+    await client.close();
+  }
+}
+
 async function updateCompanyByRecruiterId(recruiterId, updatedRecord) {
   const client = await getClient();
   if (!client) return null;
@@ -60,7 +96,8 @@ export async function GET(req) {
   try {
     const recruiterId = req.nextUrl.searchParams.get('recruiterId');
     if (!recruiterId) {
-      return NextResponse.json({ error: 'Missing recruiterId' }, { status: 400 });
+      const companies = await findAllCompanies();
+      return NextResponse.json(companies.map(c => ({ ...c, _id: c._id.toString() })));
     }
 
     const company = await findCompanyByRecruiterId(recruiterId);
@@ -71,6 +108,25 @@ export async function GET(req) {
     return NextResponse.json({ company: { ...company, _id: company._id.toString() } });
   } catch (err) {
     console.error('Error in /api/companies GET', err);
+    return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req) {
+  try {
+    const body = await req.json();
+    const { id, ...updatedFields } = body;
+    console.log('PATCH /api/companies - id:', id, 'fields:', updatedFields);
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Missing company ID' }, { status: 400 });
+    }
+
+    const result = await updateCompanyById(id, updatedFields);
+    console.log('PATCH /api/companies - update result:', result);
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error('Error in /api/companies PATCH', err);
     return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
   }
 }

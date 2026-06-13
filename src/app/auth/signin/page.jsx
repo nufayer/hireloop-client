@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, Input, Button, Link } from '@heroui/react';
 import { authClient } from '@/lib/auth-client';
+import { Suspense } from 'react';
 
-export default function SignInPage() {
+function SignInForm() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const searchParams = useSearchParams();
@@ -130,5 +131,13 @@ export default function SignInPage() {
                 </div>
             </Card>
         </div>
+    );
+}
+
+export default function SignInPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SignInForm />
+        </Suspense>
     );
 }
