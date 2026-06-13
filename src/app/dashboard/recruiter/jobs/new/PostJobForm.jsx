@@ -16,31 +16,28 @@ import {
     toast
 } from "@heroui/react";
 import { Briefcase, Globe } from "@gravity-ui/icons";
-import { Loader } from "lucide-react";
 import { createJob } from "@/lib/actions/jobs";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default function PostJobForm({ company }) {
     // Mock configuration for recruiter's authenticated state
-    //const [company] = useState({
-    //    name: "Acme Corp (Auto-filled)",
-    //    id: "company_123",
-    //    isApproved: true,
-    //});
+    // console.log("PostJobForm received company prop:", company);
+    // const [company] = useState({
+    //     name: "Acme Corp (Auto-filled)",
+    //     id: "company_123",
+    //     isApproved: true,
+    // });
 
     const [isRemote, setIsRemote] = useState(false);
     const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState(null);
-    const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-      //  if (!company.isApproved) {
-      //      alert("Your company profile must be approved before you can post jobs.");
-      //      return;
-      //  }
+        // if (!company.isApproved) {
+        //     alert("Your company profile must be approved before you can post jobs.");
+        //     return;
+        // }
 
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
@@ -73,25 +70,13 @@ export default function PostJobForm({ company }) {
             isPubliclyVisible: true,
         };
 
-        setIsSubmitting(true);
-        setSubmitError(null);
-        try {
-            const res = await createJob(payload);
-            if (res.insertedId) {
-                toast.success("Job posted successfully!");
-                e.target.reset();
-                setIsRemote(false);
-                router.push("/dashboard/recruiter/jobs");
-                return;
-            }
-            throw new Error("Unexpected response from server");
-        } catch (err) {
-            console.error("createJob error", err);
-            const msg = err?.message || "Failed to post job";
-            setSubmitError(msg);
-            toast.error(msg);
-        } finally {
-            setIsSubmitting(false);
+        const res = await createJob(payload);
+
+        if (res.insertedId) {
+            toast.success("Job posted successfully!");
+            e.target.reset();
+            setIsRemote(false);
+            redirect("/dashboard/recruiter/jobs");
         }
     };
 
@@ -118,13 +103,15 @@ export default function PostJobForm({ company }) {
                     {/* Company verification status panel */}
                     <div className="mt-4 inline-flex items-center gap-2 bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-400">
                         <Briefcase size={14} className="text-zinc-500" />
-                        Posting as: <span className="font-semibold text-zinc-300">{company?.name || 'Your Company'}</span>
-                        <span className="text-emerald-500 font-medium bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-900/50">{company?.isApproved ? 'Approved' : 'Pending'}</span>
+                        Posting as: <span className="font-semibold text-zinc-300">{company.name}</span>
+                        <span className="text-emerald-500 font-medium bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-900/50">{company.status}</span>
                     </div>
                 </div>
 
+                {company.status !== 'Approved' && <div>Please wait to get approval</div>}
+
                 {/* Hero UI Main Form Handler */}
-                <Form onSubmit={handleSubmit} className="space-y-8" validationErrors={errors} validationBehavior='aria'>
+                { company.status === 'Approved' && <Form onSubmit={handleSubmit} className="space-y-8" validationErrors={errors} validationBehavior='aria'>
 
                     {/* SECTION 1: Job Information */}
                     <Fieldset className="space-y-6 w-full">
@@ -283,34 +270,22 @@ export default function PostJobForm({ company }) {
                     </Fieldset>
 
                     {/* Form Actions */}
-                    <div className="flex flex-col gap-2">
-                        {submitError && (
-                            <div className="text-sm text-danger bg-rose-900/20 border border-rose-900/40 rounded px-3 py-2">
-                                {submitError}
-                            </div>
-                        )}
-
-                        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800 w-full">
-                            <Button
-                                type="button"
-                                variant="bordered"
-                                className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 rounded-lg px-6 font-medium h-11"
-                                disabled={isSubmitting}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                className="bg-white text-black font-semibold hover:bg-zinc-200 rounded-lg px-6 transition-colors h-11 flex items-center"
-                                disabled={isSubmitting}
-                                aria-busy={isSubmitting}
-                            >
-                                {isSubmitting && <Loader className="animate-spin mr-2 w-4 h-4" />}
-                                {isSubmitting ? 'Posting...' : 'Post Job'}
-                            </Button>
-                        </div>
+                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800 w-full">
+                        <Button
+                            type="button"
+                            variant="bordered"
+                            className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 rounded-lg px-6 font-medium h-11"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="bg-white text-black font-semibold hover:bg-zinc-200 rounded-lg px-6 transition-colors h-11"
+                        >
+                            Post Job
+                        </Button>
                     </div>
-                </Form>
+                </Form>}
             </div>
         </div>
     );

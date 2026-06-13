@@ -1,9 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import React, { useState, useEffect } from 'react';
-import { useSession } from '@/lib/auth-client';
+import React, { useState } from 'react';
 import { 
     Form, 
     Fieldset, 
@@ -18,6 +15,7 @@ import {
     toast
 } from '@heroui/react';
 import { ArrowUpToLine, Globe, Factory, ArrowRight, Pencil, ChevronDown } from '@gravity-ui/icons';
+import { createCompany } from '@/lib/actions/companies';
 
 // Layout Shared Style Constants matching your design image
 const textInputClass = "w-full bg-zinc-900/50 border border-zinc-800 text-white rounded-lg px-3 py-2.5 outline-none placeholder:text-zinc-600 focus:border-zinc-700 transition";
@@ -36,37 +34,6 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
     // Auxiliary Upload States
     const [logoUrl, setLogoUrl] = useState('');
     const [isUploading, setIsUploading] = useState(false);
-    const { data: session, isPending } = useSession();
-
-    const recruiterUser = recruiter || session?.user;
-    const recruiterId = recruiterUser?.id || recruiterUser?.sub || recruiterUser?.userId;
-
-    useEffect(() => {
-        console.log('Session state:', { session: session?.user, recruiter, recruiterId, isPending });
-    }, [session, recruiter, recruiterId, isPending]);
-
-    useEffect(() => {
-        if (company || !recruiterId) return;
-
-        const loadCompany = async () => {
-            try {
-                const res = await fetch(`/api/companies?recruiterId=${encodeURIComponent(recruiterId)}`);
-                if (!res.ok) {
-                    console.warn('Failed to load recruiter company', await res.text());
-                    return;
-                }
-
-                const data = await res.json();
-                if (data?.company) {
-                    setCompany(data.company);
-                }
-            } catch (error) {
-                console.error('Error loading recruiter company:', error);
-            }
-        };
-
-        loadCompany();
-    }, [company, recruiterId]);
 
     // 2. Client side Imgbb Upload Handler
     const handleLogoUpload = async (e) => {
@@ -128,13 +95,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
             return;
         }
 
-        if (!recruiterId) {
-            const message = "Recruiter identity is not available. Please sign in again.";
-            setErrors(prev => ({ ...prev, submit: message }));
-            toast.error(message);
-            return;
-        }
-
+        // Commit state updates
         const newCompanyData = {
             name: companyName,
             websiteUrl,
@@ -143,42 +104,25 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
             employeeCount: employeeCount || '1-10 employees',
             description,
             logo: logoUrl || (company ? company.logo : ''),
-            status: company ? company.status : 'Pending',
-            recruiterId,
-        };
+            status: company && company.status ? company.status : 'Pending', 
+            // Retains status if updating profile details
+            recruiterId: recruiter.id // Associate company with the current recruiter
+        }
+        setCompany(newCompanyData);
 
         console.log("Submitted Company Profile Data:", newCompanyData);
 
-        try {
-            const res = await fetch('/api/companies', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newCompanyData),
-            });
+        const payload = await createCompany(newCompanyData);
 
-            const payload = await res.json();
-            if (!res.ok) {
-                throw new Error(payload?.error || 'Company creation failed');
-            }
-
-            const savedCompany = payload.company || {
-                ...newCompanyData,
-                _id: payload.insertedId || payload.updatedId,
-            };
-
-            setCompany(savedCompany);
-            toast.success("Company profile saved successfully!");
-            setErrors({});
-            setIsEditing(false);
-            return;
-        } catch (error) {
-            console.error('createCompany error', error);
-            const message = error?.message || 'Unable to save company profile';
-            setErrors(prev => ({ ...prev, submit: message }));
-            toast.error(message);
+        if(payload.insertedId) {
+            const savedCompany = {...company, _id: payload.insertedId}
+            setCompany(savedCompany)
+            toast.success("Company profile created successfully!");
         }
+
+
+        setErrors({});
+        setIsEditing(false);
     };
 
     // 4. State Toggle helper triggers
@@ -324,7 +268,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
 
                     {/* ROW 2: Website URL + Location */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <TextField name="websiteUrl" defaultValue={company?.websiteUrl || ''} isInvalid={!!errors.websiteUrl} className="flex flex-col gap-1 w-full">
+                        <TextField name="websiteUrl" defaultValue={company?.websiteUrl || ''} Linda isInvalid={!!errors.websiteUrl} className="flex flex-col gap-1 w-full">
                             <Label className="text-zinc-400 font-medium text-sm">Website URL</Label>
                             <div className="relative flex items-center">
                                 <span className="absolute left-3 text-zinc-600 text-sm font-medium select-none pointer-events-none border-r border-zinc-800 pr-2">
@@ -401,12 +345,6 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
                         />
                     </TextField>
                 </Fieldset>
-
-                {errors.submit && (
-                    <div className="text-sm text-rose-400 bg-rose-950/40 border border-rose-900 rounded-lg p-3">
-                        {errors.submit}
-                    </div>
-                )}
 
                 {/* Form Navigation Action Area controls */}
                 <div className="flex justify-end gap-3 pt-5 border-t border-zinc-900 w-full">
